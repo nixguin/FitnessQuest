@@ -34,6 +34,7 @@ import {
 import PixelCharacter from "../components/PixelCharacter";
 import CharacterStats from "../components/CharacterStats";
 import { checkNewEquipment } from "../utils/characterProgression";
+import { getNextVariation, suggestAlternatives } from "../utils/exerciseProgression";
 
 export default function DailyQuestScreen() {
   const [exercises, setExercises] = useState<Exercise[]>([]);
@@ -91,27 +92,76 @@ export default function DailyQuestScreen() {
     const today = new Date();
     let hasChanges = false;
 
-    const updatedExercises = currentExercises.map((exercise) => {
+    const updatedExercises = [];
+
+    for (const exercise of currentExercises) {
       if (isProgressionDay(exercise.createdAt, today)) {
         hasChanges = true;
         const progressed = progressExerciseWeekly(exercise);
 
         if (progressed.difficulty > exercise.difficulty) {
-          Alert.alert(
-            "🎉 Level Up!",
-            `${exercise.name} has reached Difficulty Level ${progressed.difficulty}!\nNew target: ${progressed.currentTarget} ${progressed.unit}`
-          );
+          // Check if there's a better exercise variation to progress to
+          const nextVariation = getNextVariation(exercise);
+          
+          if (nextVariation.hasNext && nextVariation.nextExercise) {
+            // Offer the AI-suggested progression - ADD as new exercise
+            Alert.alert(
+              "🚀 SKILL UNLOCKED!",
+              `Congratulations! You've mastered ${exercise.name}!\n\n⚡ AI Suggests Adding:\n${nextVariation.nextExercise.name}\n${nextVariation.nextExercise.description || ''}\n\nThis will be ADDED to your daily quest alongside ${exercise.name}!\n\nStarting at ${nextVariation.nextExercise.startTarget} ${nextVariation.nextExercise.unit || exercise.unit}\nProgress: Level ${nextVariation.currentLevel}/${nextVariation.totalLevels}`,
+              [
+                {
+                  text: "Not Now",
+                  style: "cancel",
+                  onPress: () => {
+                    updatedExercises.push(progressed);
+                  }
+                },
+                {
+                  text: "Add New Challenge! 💪",
+                  onPress: async () => {
+                    // Keep the current exercise AND add the new one
+                    updatedExercises.push(progressed);
+                    
+                    const newExercise: Exercise = {
+                      id: Date.now().toString(),
+                      name: nextVariation.nextExercise!.name,
+                      type: 'custom',
+                      currentTarget: nextVariation.nextExercise!.startTarget,
+                      weeklyIncrease: nextVariation.nextExercise!.increment,
+                      maxTarget: nextVariation.nextExercise!.maxTarget,
+                      unit: nextVariation.nextExercise!.unit || exercise.unit,
+                      difficulty: 1,
+                      createdAt: new Date().toISOString(),
+                      pendingAmount: 0,
+                      underperformanceCount: 0,
+                    };
+                    
+                    updatedExercises.push(newExercise);
+                  }
+                }
+              ]
+            );
+          } else {
+            updatedExercises.push(progressed);
+          } else {
+            // No AI progression available, use standard difficulty increase
+            Alert.alert(
+              "🎉 Level Up!",
+              `${exercise.name} has reached Difficulty Level ${progressed.difficulty}!\nNew target: ${progressed.currentTarget} ${progressed.unit}\n\n${nextVariation.currentLevel === nextVariation.totalLevels ? '👑 You\'ve mastered all variations! You\'re a legend!' : ''}`
+            );
+            updatedExercises.push(progressed);
+          }
         } else {
           Alert.alert(
             "📈 Progressive Overload",
             `${exercise.name} target increased to ${progressed.currentTarget} ${progressed.unit}`
           );
+          updatedExercises.push(progressed);
         }
-
-        return progressed;
+      } else {
+        updatedExercises.push(exercise);
       }
-      return exercise;
-    });
+    }
 
     if (hasChanges) {
       await saveExercises(updatedExercises);
