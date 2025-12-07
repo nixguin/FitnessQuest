@@ -5,6 +5,7 @@
 Your app now features a retro 8-bit/16-bit video game aesthetic!
 
 ### Primary Colors
+
 ```
 Dark Background:    #1a1a2e  (Deep dark blue-black)
 Card Background:    #16213e  (Slightly lighter navy)
@@ -24,27 +25,32 @@ White:              #ffffff  (Pure white for borders)
 ## Design Elements
 
 ### 🔲 Sharp Edges
+
 - **Zero border radius** on all elements
 - Everything is perfectly square/rectangular
 - No rounded corners = authentic retro feel
 
 ### 🔳 Thick Borders
+
 - **3-4px borders** on all interactive elements
 - High contrast borders (bright colors on dark bg)
 - Double borders for emphasis (stat boxes)
 
 ### 💚 Neon Glow
+
 - **Text shadows** with no blur (pixelated effect)
 - Offset shadows: `{ width: 4, height: 4 }`
 - Shadow radius: 0 (no blur)
 - Creates that classic arcade cabinet look
 
 ### 📝 Monospace Font
+
 - Uses system `'monospace'` font family
 - Perfect for retro terminal aesthetic
 - Fixed-width characters like old computers
 
 ### 🎯 High Contrast
+
 - **Bright neon colors** on dark backgrounds
 - Maximum readability
 - Arcade cabinet inspired
@@ -52,36 +58,41 @@ White:              #ffffff  (Pure white for borders)
 ### ✨ Visual Hierarchy
 
 **Primary Actions (Green):**
+
 ```typescript
-backgroundColor: '#00ff41'  // Bright green
-borderColor: '#fff'         // White border
-color: '#000'              // Black text
+backgroundColor: "#00ff41"; // Bright green
+borderColor: "#fff"; // White border
+color: "#000"; // Black text
 ```
 
 **Secondary Actions (Cyan):**
+
 ```typescript
-backgroundColor: '#16213e'  // Dark navy
-borderColor: '#00d9ff'     // Cyan border
-color: '#00ff41'           // Green text
+backgroundColor: "#16213e"; // Dark navy
+borderColor: "#00d9ff"; // Cyan border
+color: "#00ff41"; // Green text
 ```
 
 **Warning/Special (Orange):**
+
 ```typescript
-backgroundColor: '#16213e'  // Dark navy
-borderColor: '#ffaa00'     // Orange border
-color: '#ffaa00'           // Orange text
+backgroundColor: "#16213e"; // Dark navy
+borderColor: "#ffaa00"; // Orange border
+color: "#ffaa00"; // Orange text
 ```
 
 **Danger/Delete (Pink):**
+
 ```typescript
-backgroundColor: '#ff0040'  // Hot pink
-borderColor: '#fff'        // White border
-color: '#fff'              // White text
+backgroundColor: "#ff0040"; // Hot pink
+borderColor: "#fff"; // White border
+color: "#fff"; // White text
 ```
 
 ## Typography
 
 ### Font Sizes (Reduced for Retro Feel)
+
 ```
 Titles:        24px (was 28px)
 Headings:      18px (was 22px)
@@ -91,6 +102,7 @@ Tiny:          11px (was 13px)
 ```
 
 ### Letter Spacing
+
 ```
 Titles:        2px   (spaced out for impact)
 Headings:      1px   (slightly spaced)
@@ -98,6 +110,7 @@ Body:          0px   (normal)
 ```
 
 ### Font Weight
+
 ```
 Bold text:     'bold' (no 600, full bold only)
 Normal text:   'normal'
@@ -106,6 +119,7 @@ Normal text:   'normal'
 ## Component Styles
 
 ### 🎮 Buttons
+
 ```typescript
 {
   borderRadius: 0,        // Square corners
@@ -116,6 +130,7 @@ Normal text:   'normal'
 ```
 
 ### 📦 Cards
+
 ```typescript
 {
   borderRadius: 0,        // Square
@@ -127,6 +142,7 @@ Normal text:   'normal'
 ```
 
 ### 📊 Progress Bars
+
 ```typescript
 {
   height: 16,             // Thicker than modern
@@ -138,6 +154,7 @@ Normal text:   'normal'
 ```
 
 ### 📱 Inputs
+
 ```typescript
 {
   borderRadius: 0,        // Square
@@ -149,6 +166,7 @@ Normal text:   'normal'
 ```
 
 ### 🎯 Stat Boxes
+
 ```typescript
 {
   borderWidth: 2,
@@ -162,6 +180,7 @@ Normal text:   'normal'
 ## Animations & Effects
 
 ### Text Shadow (Pixelated)
+
 ```typescript
 {
   textShadowColor: '#003d14',    // Dark green
@@ -171,6 +190,7 @@ Normal text:   'normal'
 ```
 
 ### Completion States
+
 - Incomplete: Cyan border (`#00d9ff`)
 - Complete: Green border (`#00ff41`)
 - Button: Gray circle → Green filled square
@@ -178,6 +198,7 @@ Normal text:   'normal'
 ## Retro Gaming References
 
 ### Inspired By:
+
 - 🎮 **NES/SNES UI** - Chunky borders, high contrast
 - 👾 **Arcade Cabinets** - Neon colors, pixelated fonts
 - 💻 **DOS/Terminal** - Monospace fonts, green on black
@@ -187,6 +208,7 @@ Normal text:   'normal'
 ## Color Combinations
 
 ### Exercise Cards
+
 ```
 Background:  #16213e (Navy)
 Border:      #00d9ff (Cyan)
@@ -195,6 +217,7 @@ Details:     #8b8b8b (Gray)
 ```
 
 ### Quest Completion
+
 ```
 Background:  #00ff41 (Bright green)
 Border:      #ffffff (White)
@@ -202,6 +225,7 @@ Text:        #000000 (Black)
 ```
 
 ### Modal Dialogs
+
 ```
 Background:  #16213e (Navy)
 Border:      #00ff41 (Green)
@@ -212,6 +236,7 @@ Inputs:      #00d9ff borders
 ## Accessibility
 
 Despite the retro style, the app maintains:
+
 - ✅ **High contrast ratios** for readability
 - ✅ **Clear visual hierarchy** with color coding
 - ✅ **Large touch targets** (48x48 minimum)
@@ -220,6 +245,7 @@ Despite the retro style, the app maintains:
 ## Future Enhancements
 
 ### Could Add:
+
 - 🎵 8-bit sound effects
 - ⚡ Pixelated animations
 - 🎨 Scanline effect overlay
@@ -231,19 +257,24 @@ Despite the retro style, the app maintains:
 ## Implementation Notes
 
 ### CSS-in-JS (StyleSheet)
+
 All styles use React Native's `StyleSheet.create()` for:
+
 - Performance optimization
 - Type checking
 - Style reusability
 
 ### No Custom Fonts (Yet)
+
 Currently using system monospace font. To add a pixel font:
+
 ```bash
 expo install expo-font
 # Then use fonts like 'Press Start 2P' or 'VT323'
 ```
 
 ### Platform Compatibility
+
 - ✅ iOS - Full support
 - ✅ Android - Full support
 - ⚠️ Web - Mostly works (some shadow effects differ)
@@ -257,11 +288,11 @@ expo install expo-font
 **Primary (Green):** `#00ff41`  
 **Secondary (Cyan):** `#00d9ff`  
 **Accent (Orange):** `#ffaa00`  
-**Danger (Pink):** `#ff0040`  
+**Danger (Pink):** `#ff0040`
 
 **Borders:** 2-4px thick, no radius  
 **Fonts:** Monospace, bold weights  
-**Shadows:** Sharp, no blur  
+**Shadows:** Sharp, no blur
 
 ---
 

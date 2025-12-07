@@ -5,13 +5,16 @@
 ### Getting Started
 
 #### First Launch
+
 When you first open the app, you'll see the **Exercise Setup Screen**:
 
 1. **Quick Add Exercises**
+
    - Tap "💪 Push-ups", "🏃 Running", or "🏋️ Pull-ups" for instant setup
    - These come with preset values optimized for progression
 
 2. **Add Custom Exercises**
+
    - Tap "+ Add Custom Exercise"
    - Enter exercise details:
      - **Name**: What you'll see daily (e.g., "Squats", "Plank")
@@ -28,6 +31,7 @@ When you first open the app, you'll see the **Exercise Setup Screen**:
 #### Understanding the Interface
 
 **Top Section - Your Stats:**
+
 ```
 ⚔️ Daily Quest
 2025-12-05
@@ -40,6 +44,7 @@ EXP Bar: [████████░░] 300/500 EXP to Level 2
 
 **Quest Cards:**
 Each exercise shows:
+
 - Exercise name
 - Target amount and unit
 - Current difficulty level
@@ -66,15 +71,18 @@ Level: 1
 ### Progressive Overload Explained
 
 #### Weekly Progression
+
 Every 7 days from when you created an exercise:
 
 **Normal Progression:**
+
 ```
 📈 Progressive Overload
 Push-ups target increased to 25 reps
 ```
 
 **Level Up:**
+
 ```
 🎉 Level Up!
 Push-ups has reached Difficulty Level 2!
@@ -84,6 +92,7 @@ New target: 60 reps
 #### Example: Push-ups Journey
 
 **Difficulty Level 1:**
+
 - Week 1: 20 reps
 - Week 2: 25 reps (+5)
 - Week 3: 30 reps (+5)
@@ -91,6 +100,7 @@ New target: 60 reps
 - Week 16: 100 reps (MAX REACHED!)
 
 **🎉 LEVEL UP TO DIFFICULTY 2!**
+
 - Week 17: 60 reps (60% of previous max)
 - New max target: 150 reps
 - Week 18: 65 reps (+5)
@@ -103,15 +113,18 @@ This continues indefinitely - keep leveling up!
 #### 🎯 Setting Realistic Targets
 
 **Starting Target:**
+
 - Choose something you can currently do comfortably
 - You should be able to complete it even on tired days
 
 **Weekly Increase:**
+
 - Conservative: 5-10% of starting target
 - Moderate: 10-20%
 - Aggressive: 20-30%
 
 **Max Target:**
+
 - For reps: 3-5x your starting amount
 - For distance: 2-3x your starting amount
 - For time: 2-4x your starting duration
@@ -126,10 +139,12 @@ This continues indefinitely - keep leveling up!
 #### 💪 Progressive Overload Strategy
 
 **If progression feels too easy:**
+
 - Increase your weekly increment
 - Lower your max target to level up faster
 
 **If progression feels too hard:**
+
 - Reduce your weekly increment
 - Increase your max target to level up slower
 - Modify the exercise (e.g., knee push-ups vs regular)
@@ -168,14 +183,17 @@ A: Not in the current version - this feature is coming soon!
 ### Troubleshooting
 
 **App won't load:**
+
 - Force close and reopen
 - Check your internet connection (for first install)
 
 **Data not saving:**
+
 - Make sure you have storage permissions
 - Try reinstalling the app
 
 **Progressive overload not working:**
+
 - Check that 7 days have passed since exercise creation
 - Close and reopen the app to trigger the check
 

@@ -9,22 +9,28 @@ Your Fitness Quest app is completely set up and ready to go!
 ## Option 1: Mobile Phone (Recommended) 📱
 
 ### Step 1: Install Expo Go
+
 **On your phone, download Expo Go:**
+
 - **Android**: [Google Play Store](https://play.google.com/store/apps/details?id=host.exp.exponent)
 - **iPhone**: [App Store](https://apps.apple.com/app/expo-go/id982107779)
 
 ### Step 2: Start the App
+
 **In PowerShell/Terminal, run:**
+
 ```powershell
 cd "c:\Users\ntony\OneDrive\Desktop\Fitness App"
 npm start
 ```
 
 ### Step 3: Scan QR Code
+
 - **Android**: Open Expo Go → Scan QR code from terminal
 - **iPhone**: Open Camera app → Scan QR code → Open in Expo Go
 
 ### Step 4: Start Using!
+
 1. Add your first exercise (try "Push-ups" quick add)
 2. Tap "Start Training"
 3. Complete your first daily quest!
@@ -46,6 +52,7 @@ npm run android
 cd "c:\Users\ntony\OneDrive\Desktop\Fitness App"
 npm run web
 ```
+
 ⚠️ Note: Some features may not work in web mode (AsyncStorage)
 
 ---
@@ -53,6 +60,7 @@ npm run web
 ## 🎯 What Happens Next?
 
 ### When You First Open:
+
 ```
 ⚔️ Setup Your Daily Quest
 Create your training regimen
@@ -67,6 +75,7 @@ Your Exercises:
 ```
 
 ### After Adding Exercises:
+
 ```
 ⚔️ Daily Quest
 2025-12-05
@@ -102,18 +111,21 @@ EXP Bar: [░░░░░░░░░░] 0/500 EXP
 ## 📈 Week-by-Week Preview
 
 ### Week 1 (Today!)
+
 ```
 Daily Quest: 20 push-ups, 1 mile run, 5 pull-ups
 Status: Let's start! 💪
 ```
 
 ### Week 2
+
 ```
 Daily Quest: 25 push-ups, 1.5 mile run, 7 pull-ups
 Status: Progressive overload! 📈
 ```
 
 ### Week 16 (After ~4 months)
+
 ```
 Daily Quest: 100 push-ups, 5 mile run, 30 pull-ups
 Status: MAX REACHED! 🎉
@@ -122,6 +134,7 @@ Status: MAX REACHED! 🎉
 ```
 
 ### Week 17
+
 ```
 Daily Quest: 60 push-ups, 3 mile run, 18 pull-ups
 Difficulty: Level 2 | New max: 150/7.5/45
@@ -133,23 +146,28 @@ Status: New challenge unlocked! ⚡
 ## 🛟 Troubleshooting
 
 ### "npm: command not found"
+
 You need to install Node.js first:
+
 1. Download from [nodejs.org](https://nodejs.org)
 2. Install it
 3. Restart PowerShell
 4. Try again
 
 ### "Metro bundler not starting"
+
 ```powershell
 npm start -- --reset-cache
 ```
 
 ### App crashes on launch
+
 1. Stop the server (Ctrl+C)
 2. Run: `npm start`
 3. Scan QR code again
 
 ### Changes not showing
+
 - Shake your phone → "Reload"
 - Or press `r` in terminal
 
@@ -158,6 +176,7 @@ npm start -- --reset-cache
 ## 📚 Full Documentation
 
 Once you're running, check out:
+
 - **USER_GUIDE.md** - Complete user manual
 - **README.md** - Feature overview
 - **FEATURES_ROADMAP.md** - Future plans
@@ -168,18 +187,21 @@ Once you're running, check out:
 ## 🎯 Your Mission
 
 ### This Week:
+
 - ✅ Run the app
 - ✅ Add exercises
 - ✅ Complete 1 quest
 - ✅ Start your streak
 
 ### This Month:
+
 - ✅ 7-day streak 🔥
 - ✅ See first progression
 - ✅ Reach Level 2
 - ✅ 30 total days
 
 ### This Year:
+
 - ✅ 100-day streak 🔥🔥🔥
 - ✅ Difficulty Level 2+ on all exercises
 - ✅ Become unstoppable 💪⚡
@@ -199,6 +221,7 @@ Once you're running, check out:
 ## 🎉 Ready?
 
 ### Run this command now:
+
 ```powershell
 cd "c:\Users\ntony\OneDrive\Desktop\Fitness App"
 npm start
@@ -210,4 +233,4 @@ Then scan the QR code with Expo Go!
 
 **Your journey to become stronger starts NOW! 💪⚡**
 
-*"Arise!" - Sung Jin-Woo*
+_"Arise!" - Sung Jin-Woo_

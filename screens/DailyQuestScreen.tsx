@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -8,8 +8,10 @@ import {
   TextInput,
   Alert,
   Modal,
-} from 'react-native';
-import { Exercise, DailyQuest, QuestExercise, UserProgress } from '../types';
+  Image,
+} from "react-native";
+import * as ImagePicker from "expo-image-picker";
+import { Exercise, DailyQuest, QuestExercise, UserProgress } from "../types";
 import {
   getExercises,
   getTodayQuest,
@@ -17,18 +19,21 @@ import {
   getUserProgress,
   saveUserProgress,
   saveExercises,
-} from '../utils/storage';
-import { getTodayString, getDaysAgo } from '../utils/dateUtils';
-import { progressExerciseWeekly, isProgressionDay } from '../utils/progressiveOverload';
-import { 
-  calculateTodayTarget, 
+} from "../utils/storage";
+import { getTodayString, getDaysAgo } from "../utils/dateUtils";
+import {
+  progressExerciseWeekly,
+  isProgressionDay,
+} from "../utils/progressiveOverload";
+import {
+  calculateTodayTarget,
   analyzePerformance,
   shouldDecreaseTarget,
-  decreaseExerciseTarget 
-} from '../utils/adaptiveDifficulty';
-import PixelCharacter from '../components/PixelCharacter';
-import CharacterStats from '../components/CharacterStats';
-import { checkNewEquipment } from '../utils/characterProgression';
+  decreaseExerciseTarget,
+} from "../utils/adaptiveDifficulty";
+import PixelCharacter from "../components/PixelCharacter";
+import CharacterStats from "../components/CharacterStats";
+import { checkNewEquipment } from "../utils/characterProgression";
 
 export default function DailyQuestScreen() {
   const [exercises, setExercises] = useState<Exercise[]>([]);
@@ -37,15 +42,17 @@ export default function DailyQuestScreen() {
   const [inputValues, setInputValues] = useState<{ [key: string]: string }>({});
   const [showAddModal, setShowAddModal] = useState(false);
   const [newExercise, setNewExercise] = useState({
-    name: '',
-    currentTarget: '',
-    weeklyIncrease: '',
-    maxTarget: '',
-    unit: 'reps',
+    name: "",
+    currentTarget: "",
+    weeklyIncrease: "",
+    maxTarget: "",
+    unit: "reps",
   });
   const [showWeightModal, setShowWeightModal] = useState(false);
-  const [weightInput, setWeightInput] = useState('');
-  const [goalWeightInput, setGoalWeightInput] = useState('');
+  const [weightInput, setWeightInput] = useState("");
+  const [goalWeightInput, setGoalWeightInput] = useState("");
+  const [showRestDayModal, setShowRestDayModal] = useState(false);
+  const [restDayReason, setRestDayReason] = useState("");
 
   useEffect(() => {
     loadData();
@@ -55,10 +62,10 @@ export default function DailyQuestScreen() {
     const today = getTodayString();
     const loadedExercises = await getExercises();
     const loadedProgress = await getUserProgress();
-    
+
     // Check for weekly progression
     const updatedExercises = await checkAndApplyProgression(loadedExercises);
-    
+
     setExercises(updatedExercises);
     setProgress(loadedProgress);
 
@@ -73,32 +80,34 @@ export default function DailyQuestScreen() {
     // Initialize input values
     const initialInputs: { [key: string]: string } = {};
     quest.exercises.forEach((ex) => {
-      initialInputs[ex.exerciseId] = ex.actualAmount?.toString() || '';
+      initialInputs[ex.exerciseId] = ex.actualAmount?.toString() || "";
     });
     setInputValues(initialInputs);
   };
 
-  const checkAndApplyProgression = async (currentExercises: Exercise[]): Promise<Exercise[]> => {
+  const checkAndApplyProgression = async (
+    currentExercises: Exercise[]
+  ): Promise<Exercise[]> => {
     const today = new Date();
     let hasChanges = false;
-    
+
     const updatedExercises = currentExercises.map((exercise) => {
       if (isProgressionDay(exercise.createdAt, today)) {
         hasChanges = true;
         const progressed = progressExerciseWeekly(exercise);
-        
+
         if (progressed.difficulty > exercise.difficulty) {
           Alert.alert(
-            '🎉 Level Up!',
+            "🎉 Level Up!",
             `${exercise.name} has reached Difficulty Level ${progressed.difficulty}!\nNew target: ${progressed.currentTarget} ${progressed.unit}`
           );
         } else {
           Alert.alert(
-            '📈 Progressive Overload',
+            "📈 Progressive Overload",
             `${exercise.name} target increased to ${progressed.currentTarget} ${progressed.unit}`
           );
         }
-        
+
         return progressed;
       }
       return exercise;
@@ -126,9 +135,100 @@ export default function DailyQuestScreen() {
     };
   };
 
+  const quickIncrement = (exerciseId: string, amount: number) => {
+    const currentValue = parseInt(inputValues[exerciseId] || "0");
+    const newValue = Math.max(0, currentValue + amount);
+    setInputValues({ ...inputValues, [exerciseId]: newValue.toString() });
+  };
+
+  const takePhotoCheckIn = async () => {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    
+    if (status !== "granted") {
+      Alert.alert(
+        "Permission Required",
+        "Camera permission is needed for photo check-ins"
+      );
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      allowsEditing: true,
+      aspect: [3, 4],
+      quality: 0.7,
+    });
+
+    if (!result.canceled && progress) {
+      const today = getTodayString();
+      const newPhoto = {
+        date: today,
+        uri: result.assets[0].uri,
+      };
+
+      // Check if photo already exists for today
+      const existingPhotos = progress.photos || [];
+      const updatedPhotos = existingPhotos.filter(p => p.date !== today);
+      updatedPhotos.push(newPhoto);
+
+      const updatedProgress: UserProgress = {
+        ...progress,
+        photos: updatedPhotos,
+      };
+
+      await saveUserProgress(updatedProgress);
+      setProgress(updatedProgress);
+
+      Alert.alert(
+        "📸 Photo Saved!",
+        "Keep tracking your transformation! Compare photos over time to see your progress! 💪"
+      );
+    }
+  };
+
+  const takeRestDay = async () => {
+    if (!progress) return;
+
+    // Mark today as a rest day without penalties
+    const updatedProgress: UserProgress = {
+      ...progress,
+      currentStreak: 0,
+    };
+
+    await saveUserProgress(updatedProgress);
+    setProgress(updatedProgress);
+    setShowRestDayModal(false);
+    setRestDayReason("");
+
+    Alert.alert(
+      "😌 Rest Day Taken",
+      `Reason: ${restDayReason || "Recovery"}\n\nRest is essential for progress! Come back stronger tomorrow! 💪`,
+      [{ text: "Got it!", style: "default" }]
+    );
+  };
+
+  const celebrateCompletion = (milestone?: string) => {
+    const messages = [
+      "💪 Beast Mode Activated!",
+      "🔥 You're Unstoppable!",
+      "⚡ Power Level Rising!",
+      "🎯 Perfect Execution!",
+      "👑 Absolute Legend!",
+      "⭐ Hunter's Spirit!",
+      "🗡️ Strength +10!",
+    ];
+    
+    const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+    
+    Alert.alert(
+      "✅ Quest Complete!",
+      `${randomMessage}\n\n${milestone || "Another day conquered!"}`,
+      [{ text: "Continue", style: "default" }]
+    );
+  };
+
   const updateWeight = async () => {
     if (!weightInput) {
-      Alert.alert('Missing Information', 'Please enter your weight');
+      Alert.alert("Missing Information", "Please enter your weight");
       return;
     }
 
@@ -136,14 +236,16 @@ export default function DailyQuestScreen() {
 
     const today = getTodayString();
     const weight = parseFloat(weightInput);
-    
+
     // Check if already logged today
-    const todayEntry = progress.weightHistory?.find(entry => entry.date === today);
-    
+    const todayEntry = progress.weightHistory?.find(
+      (entry) => entry.date === today
+    );
+
     let updatedHistory = progress.weightHistory || [];
     if (todayEntry) {
       // Update existing entry
-      updatedHistory = updatedHistory.map(entry =>
+      updatedHistory = updatedHistory.map((entry) =>
         entry.date === today ? { date: today, weight } : entry
       );
     } else {
@@ -154,22 +256,29 @@ export default function DailyQuestScreen() {
     const updatedProgress: UserProgress = {
       ...progress,
       currentWeight: weight,
-      goalWeight: goalWeightInput ? parseFloat(goalWeightInput) : progress.goalWeight,
+      goalWeight: goalWeightInput
+        ? parseFloat(goalWeightInput)
+        : progress.goalWeight,
       weightHistory: updatedHistory,
     };
 
     await saveUserProgress(updatedProgress);
     setProgress(updatedProgress);
     setShowWeightModal(false);
-    setWeightInput('');
-    setGoalWeightInput('');
+    setWeightInput("");
+    setGoalWeightInput("");
 
-    Alert.alert('✅ Weight Updated!', `Current weight: ${weight} lbs`);
+    Alert.alert("✅ Weight Updated!", `Current weight: ${weight} lbs`);
   };
 
   const addNewExercise = async () => {
-    if (!newExercise.name || !newExercise.currentTarget || !newExercise.weeklyIncrease || !newExercise.maxTarget) {
-      Alert.alert('Missing Information', 'Please fill in all fields');
+    if (
+      !newExercise.name ||
+      !newExercise.currentTarget ||
+      !newExercise.weeklyIncrease ||
+      !newExercise.maxTarget
+    ) {
+      Alert.alert("Missing Information", "Please fill in all fields");
       return;
     }
 
@@ -184,7 +293,7 @@ export default function DailyQuestScreen() {
       createdAt: new Date().toISOString(),
       pendingAmount: 0,
       underperformanceCount: 0,
-      type: 'custom',
+      type: "custom",
     };
 
     const updatedExercises = [...exercises, exercise];
@@ -209,40 +318,49 @@ export default function DailyQuestScreen() {
 
       await saveDailyQuest(updatedQuest);
       setTodayQuest(updatedQuest);
-      setInputValues({ ...inputValues, [exercise.id]: '' });
+      setInputValues({ ...inputValues, [exercise.id]: "" });
     }
 
     // Reset form
     setNewExercise({
-      name: '',
-      currentTarget: '',
-      weeklyIncrease: '',
-      maxTarget: '',
-      unit: 'reps',
+      name: "",
+      currentTarget: "",
+      weeklyIncrease: "",
+      maxTarget: "",
+      unit: "reps",
     });
     setShowAddModal(false);
 
-    Alert.alert('✅ Exercise Added!', `${exercise.name} has been added to your daily quest.`);
+    Alert.alert(
+      "✅ Exercise Added!",
+      `${exercise.name} has been added to your daily quest.`
+    );
   };
 
   const toggleExerciseComplete = async (exerciseId: string) => {
     if (!todayQuest) return;
 
-    const questExercise = todayQuest.exercises.find(ex => ex.exerciseId === exerciseId);
+    const questExercise = todayQuest.exercises.find(
+      (ex) => ex.exerciseId === exerciseId
+    );
     if (!questExercise) return;
 
-    const exercise = exercises.find(e => e.id === exerciseId);
+    const exercise = exercises.find((e) => e.id === exerciseId);
     if (!exercise) return;
 
-    const actualAmount = parseInt(inputValues[exerciseId] || '0');
-    
+    const actualAmount = parseInt(inputValues[exerciseId] || "0");
+
     // Only analyze performance when marking as complete (not when unchecking)
     if (!questExercise.completed && actualAmount > 0) {
       // Analyze performance and update exercise
-      const analysis = analyzePerformance(exercise, questExercise.target, actualAmount);
-      
+      const analysis = analyzePerformance(
+        exercise,
+        questExercise.target,
+        actualAmount
+      );
+
       // Update the exercise with new stats
-      const updatedExercisesList = exercises.map(e => 
+      const updatedExercisesList = exercises.map((e) =>
         e.id === exerciseId ? analysis.updatedExercise : e
       );
       await saveExercises(updatedExercisesList);
@@ -251,7 +369,9 @@ export default function DailyQuestScreen() {
       // Show feedback to user
       if (analysis.message) {
         Alert.alert(
-          analysis.shouldDecrease ? '📉 Difficulty Adjusted' : '📝 Performance Tracked',
+          analysis.shouldDecrease
+            ? "📉 Difficulty Adjusted"
+            : "📝 Performance Tracked",
           analysis.message
         );
       }
@@ -288,7 +408,10 @@ export default function DailyQuestScreen() {
         ...progress,
         totalDaysCompleted: progress.totalDaysCompleted + 1,
         currentStreak: progress.currentStreak + 1,
-        longestStreak: Math.max(progress.longestStreak, progress.currentStreak + 1),
+        longestStreak: Math.max(
+          progress.longestStreak,
+          progress.currentStreak + 1
+        ),
         exp: progress.exp + 100,
         level: Math.floor((progress.exp + 100) / 500) + 1,
       };
@@ -299,23 +422,29 @@ export default function DailyQuestScreen() {
       const leveledUp = newProgress.level > oldLevel;
       if (leveledUp) {
         const newEquipment = checkNewEquipment(newProgress.level);
-        
-        let equipmentMsg = '';
+
+        let equipmentMsg = "";
         if (newEquipment.hasNew) {
-          equipmentMsg = '\n\n🎁 NEW EQUIPMENT UNLOCKED!\n';
-          newEquipment.items.forEach(item => {
+          equipmentMsg = "\n\n🎁 NEW EQUIPMENT UNLOCKED!\n";
+          newEquipment.items.forEach((item) => {
             equipmentMsg += `${item.item.emoji} ${item.type}: ${item.item.name}\n`;
           });
         }
 
-        Alert.alert(
-          '⭐ LEVEL UP! ⭐',
-          `Level ${newProgress.level}!\nYou've earned 100 EXP!\nCurrent Streak: ${newProgress.currentStreak} days${equipmentMsg}`
+        celebrateCompletion(
+          `⭐ LEVEL UP TO ${newProgress.level}! ⭐\nYou've earned 100 EXP!\nStreak: ${newProgress.currentStreak} days 🔥${equipmentMsg}`
         );
       } else {
-        Alert.alert(
-          '✅ Daily Quest Complete!',
-          `You've earned 100 EXP!\nCurrent Streak: ${newProgress.currentStreak} days\nLevel: ${newProgress.level}`
+        // Check for streak milestones
+        const streak = newProgress.currentStreak;
+        let milestoneMsg = "";
+        if (streak === 7) milestoneMsg = "\n🎖️ 1 WEEK STREAK!";
+        else if (streak === 30) milestoneMsg = "\n🏆 30 DAY STREAK!";
+        else if (streak === 100) milestoneMsg = "\n👑 100 DAY STREAK! LEGENDARY!";
+        else if (streak % 10 === 0 && streak > 0) milestoneMsg = `\n⭐ ${streak} DAY STREAK!`;
+
+        celebrateCompletion(
+          `You earned 100 EXP!\nStreak: ${streak} days 🔥\nLevel: ${newProgress.level}${milestoneMsg}`
         );
       }
     }
@@ -336,7 +465,7 @@ export default function DailyQuestScreen() {
       <View style={styles.header}>
         <Text style={styles.title}>⚔️ Daily Quest</Text>
         <Text style={styles.date}>{getTodayString()}</Text>
-        
+
         {/* Pixel Character Display */}
         <View style={styles.characterContainer}>
           <PixelCharacter level={progress.level} size="medium" />
@@ -369,6 +498,60 @@ export default function DailyQuestScreen() {
       <ScrollView style={styles.questList}>
         <CharacterStats level={progress.level} />
 
+        {/* Quick Action Buttons */}
+        <View style={styles.actionButtonsContainer}>
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={takePhotoCheckIn}
+          >
+            <Text style={styles.actionButtonEmoji}>📸</Text>
+            <Text style={styles.actionButtonText}>Photo</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => setShowRestDayModal(true)}
+          >
+            <Text style={styles.actionButtonEmoji}>😌</Text>
+            <Text style={styles.actionButtonText}>Rest Day</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => {
+              if (progress.currentWeight && progress.goalWeight) {
+                const weightProgress = progress.currentWeight - progress.goalWeight;
+                const percentComplete = ((progress.goalWeight / progress.currentWeight) * 100).toFixed(1);
+                Alert.alert(
+                  "📊 Your Progress",
+                  `Weight Journey:\nCurrent: ${progress.currentWeight} lbs\nGoal: ${progress.goalWeight} lbs\n\nTotal Days: ${progress.totalDaysCompleted}\nCurrent Streak: ${progress.currentStreak} 🔥\nLongest Streak: ${progress.longestStreak}\n\nPhotos Taken: ${(progress.photos || []).length}\n\nKeep pushing! 💪`
+                );
+              } else {
+                Alert.alert(
+                  "📊 Your Stats",
+                  `Total Days: ${progress.totalDaysCompleted}\nCurrent Streak: ${progress.currentStreak} 🔥\nLongest Streak: ${progress.longestStreak}\nLevel: ${progress.level}\nPhotos: ${(progress.photos || []).length}\n\nSet your weight goal to track progress!`
+                );
+              }
+            }}
+          >
+            <Text style={styles.actionButtonEmoji}>📊</Text>
+            <Text style={styles.actionButtonText}>Stats</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Recent Photos Preview */}
+        {progress.photos && progress.photos.length > 0 && (
+          <View style={styles.photosContainer}>
+            <Text style={styles.photosTitle}>📸 Progress Photos</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              {progress.photos.slice(-5).reverse().map((photo, index) => (
+                <View key={index} style={styles.photoCard}>
+                  <Image source={{ uri: photo.uri }} style={styles.photoImage} />
+                  <Text style={styles.photoDate}>{photo.date}</Text>
+                </View>
+              ))}
+            </ScrollView>
+          </View>
+        )}
+
         {/* Weight Tracker */}
         <View style={styles.weightContainer}>
           <Text style={styles.weightTitle}>⚖️ WEIGHT TRACKER</Text>
@@ -376,20 +559,23 @@ export default function DailyQuestScreen() {
             <View style={styles.weightBox}>
               <Text style={styles.weightLabel}>Current</Text>
               <Text style={styles.weightValue}>
-                {progress.currentWeight ? `${progress.currentWeight} lbs` : '-'}
+                {progress.currentWeight ? `${progress.currentWeight} lbs` : "-"}
               </Text>
             </View>
             <View style={styles.weightBox}>
               <Text style={styles.weightLabel}>Goal</Text>
               <Text style={styles.weightValue}>
-                {progress.goalWeight ? `${progress.goalWeight} lbs` : '-'}
+                {progress.goalWeight ? `${progress.goalWeight} lbs` : "-"}
               </Text>
             </View>
             {progress.currentWeight && progress.goalWeight && (
               <View style={styles.weightBox}>
                 <Text style={styles.weightLabel}>Remaining</Text>
                 <Text style={[styles.weightValue, { fontSize: 14 }]}>
-                  {Math.abs(progress.currentWeight - progress.goalWeight).toFixed(1)} lbs
+                  {Math.abs(
+                    progress.currentWeight - progress.goalWeight
+                  ).toFixed(1)}{" "}
+                  lbs
                 </Text>
               </View>
             )}
@@ -397,8 +583,8 @@ export default function DailyQuestScreen() {
           <TouchableOpacity
             style={styles.updateWeightButton}
             onPress={() => {
-              setWeightInput(progress.currentWeight?.toString() || '');
-              setGoalWeightInput(progress.goalWeight?.toString() || '');
+              setWeightInput(progress.currentWeight?.toString() || "");
+              setGoalWeightInput(progress.goalWeight?.toString() || "");
               setShowWeightModal(true);
             }}
           >
@@ -410,7 +596,7 @@ export default function DailyQuestScreen() {
           const exercise = exercises.find((e) => e.id === questEx.exerciseId);
           const hasPenalty = exercise && exercise.pendingAmount > 0;
           const isStruggling = exercise && exercise.underperformanceCount > 0;
-          
+
           return (
             <View
               key={questEx.exerciseId}
@@ -424,7 +610,8 @@ export default function DailyQuestScreen() {
                 <Text style={styles.questName}>{questEx.exerciseName}</Text>
                 <Text style={styles.questTarget}>
                   Target: {questEx.target} {questEx.unit}
-                  {hasPenalty && ` (${exercise.currentTarget} + ${exercise.pendingAmount} penalty)`}
+                  {hasPenalty &&
+                    ` (${exercise.currentTarget} + ${exercise.pendingAmount} penalty)`}
                 </Text>
                 {exercise && (
                   <>
@@ -443,24 +630,64 @@ export default function DailyQuestScreen() {
                     )}
                   </>
                 )}
-                
+
                 {!questEx.completed && (
-                  <View style={styles.inputContainer}>
-                    <Text style={styles.inputLabel}>Completed:</Text>
-                    <TextInput
-                      style={styles.input}
-                      keyboardType="numeric"
-                      placeholder="0"
-                      placeholderTextColor="#666"
-                      value={inputValues[questEx.exerciseId] || ''}
-                      onChangeText={(text) =>
-                        setInputValues({ ...inputValues, [questEx.exerciseId]: text })
-                      }
-                    />
-                    <Text style={styles.inputUnit}>{questEx.unit}</Text>
-                  </View>
+                  <>
+                    <View style={styles.inputContainer}>
+                      <Text style={styles.inputLabel}>Completed:</Text>
+                      <TouchableOpacity
+                        style={styles.incrementButton}
+                        onPress={() => quickIncrement(questEx.exerciseId, -5)}
+                      >
+                        <Text style={styles.incrementButtonText}>-5</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={styles.incrementButton}
+                        onPress={() => quickIncrement(questEx.exerciseId, -1)}
+                      >
+                        <Text style={styles.incrementButtonText}>-1</Text>
+                      </TouchableOpacity>
+                      <TextInput
+                        style={styles.input}
+                        keyboardType="numeric"
+                        placeholder="0"
+                        placeholderTextColor="#666"
+                        value={inputValues[questEx.exerciseId] || ""}
+                        onChangeText={(text) =>
+                          setInputValues({
+                            ...inputValues,
+                            [questEx.exerciseId]: text,
+                          })
+                        }
+                      />
+                      <TouchableOpacity
+                        style={styles.incrementButton}
+                        onPress={() => quickIncrement(questEx.exerciseId, 1)}
+                      >
+                        <Text style={styles.incrementButtonText}>+1</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={styles.incrementButton}
+                        onPress={() => quickIncrement(questEx.exerciseId, 5)}
+                      >
+                        <Text style={styles.incrementButtonText}>+5</Text>
+                      </TouchableOpacity>
+                      <Text style={styles.inputUnit}>{questEx.unit}</Text>
+                    </View>
+                    <View style={styles.quickFillContainer}>
+                      <TouchableOpacity
+                        style={styles.quickFillButton}
+                        onPress={() => setInputValues({
+                          ...inputValues,
+                          [questEx.exerciseId]: questEx.target.toString(),
+                        })}
+                      >
+                        <Text style={styles.quickFillText}>Fill Target</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </>
                 )}
-                
+
                 {questEx.completed && questEx.actualAmount && (
                   <Text style={styles.completedAmount}>
                     ✓ Completed: {questEx.actualAmount} {questEx.unit}
@@ -476,7 +703,7 @@ export default function DailyQuestScreen() {
                 onPress={() => toggleExerciseComplete(questEx.exerciseId)}
               >
                 <Text style={styles.checkButtonText}>
-                  {questEx.completed ? '✓' : '○'}
+                  {questEx.completed ? "✓" : "○"}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -510,67 +737,77 @@ export default function DailyQuestScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>+ ADD EXERCISE</Text>
-            
+
             <TextInput
               style={styles.modalInput}
               placeholder="Exercise Name"
               placeholderTextColor="#666"
               value={newExercise.name}
-              onChangeText={(text) => setNewExercise({ ...newExercise, name: text })}
+              onChangeText={(text) =>
+                setNewExercise({ ...newExercise, name: text })
+              }
             />
-            
+
             <TextInput
               style={styles.modalInput}
               placeholder="Starting Target"
               placeholderTextColor="#666"
               keyboardType="numeric"
               value={newExercise.currentTarget}
-              onChangeText={(text) => setNewExercise({ ...newExercise, currentTarget: text })}
+              onChangeText={(text) =>
+                setNewExercise({ ...newExercise, currentTarget: text })
+              }
             />
-            
+
             <TextInput
               style={styles.modalInput}
               placeholder="Weekly Increment"
               placeholderTextColor="#666"
               keyboardType="numeric"
               value={newExercise.weeklyIncrease}
-              onChangeText={(text) => setNewExercise({ ...newExercise, weeklyIncrease: text })}
+              onChangeText={(text) =>
+                setNewExercise({ ...newExercise, weeklyIncrease: text })
+              }
             />
-            
+
             <TextInput
               style={styles.modalInput}
               placeholder="Max Target (for level up)"
               placeholderTextColor="#666"
               keyboardType="numeric"
               value={newExercise.maxTarget}
-              onChangeText={(text) => setNewExercise({ ...newExercise, maxTarget: text })}
+              onChangeText={(text) =>
+                setNewExercise({ ...newExercise, maxTarget: text })
+              }
             />
-            
+
             <TextInput
               style={styles.modalInput}
               placeholder="Unit (reps, km, min)"
               placeholderTextColor="#666"
               value={newExercise.unit}
-              onChangeText={(text) => setNewExercise({ ...newExercise, unit: text })}
+              onChangeText={(text) =>
+                setNewExercise({ ...newExercise, unit: text })
+              }
             />
-            
+
             <View style={styles.modalButtons}>
               <TouchableOpacity
                 style={[styles.modalButton, styles.cancelButton]}
                 onPress={() => {
                   setShowAddModal(false);
                   setNewExercise({
-                    name: '',
-                    currentTarget: '',
-                    weeklyIncrease: '',
-                    maxTarget: '',
-                    unit: 'reps',
+                    name: "",
+                    currentTarget: "",
+                    weeklyIncrease: "",
+                    maxTarget: "",
+                    unit: "reps",
                   });
                 }}
               >
                 <Text style={styles.modalButtonText}>Cancel</Text>
               </TouchableOpacity>
-              
+
               <TouchableOpacity
                 style={[styles.modalButton, styles.confirmButton]}
                 onPress={addNewExercise}
@@ -592,7 +829,7 @@ export default function DailyQuestScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>⚖️ UPDATE WEIGHT</Text>
-            
+
             <Text style={styles.weightInputLabel}>Current Weight (lbs)</Text>
             <TextInput
               style={styles.modalInput}
@@ -602,7 +839,7 @@ export default function DailyQuestScreen() {
               value={weightInput}
               onChangeText={setWeightInput}
             />
-            
+
             <Text style={styles.weightInputLabel}>Goal Weight (lbs)</Text>
             <TextInput
               style={styles.modalInput}
@@ -612,14 +849,61 @@ export default function DailyQuestScreen() {
               value={goalWeightInput}
               onChangeText={setGoalWeightInput}
             />
-            
+
             <View style={styles.modalButtons}>
               <TouchableOpacity
                 style={[styles.modalButton, styles.cancelButton]}
                 onPress={() => {
                   setShowWeightModal(false);
-                  setWeightInput('');
-                  setGoalWeightInput('');
+                  setWeightInput("");
+                  setGoalWeightInput("");
+                }}
+              >
+                <Text style={styles.modalButtonText}>Cancel</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.modalButton, styles.confirmButton]}
+                onPress={updateWeight}
+              >
+                <Text style={styles.modalButtonText}>Save</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Rest Day Modal */}
+      <Modal
+        visible={showRestDayModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowRestDayModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>😌 TAKE REST DAY</Text>
+            
+            <Text style={styles.restDayInfo}>
+              Rest is essential for recovery and growth. Your streak will reset, but no penalties will be applied.
+            </Text>
+            
+            <Text style={styles.weightInputLabel}>Reason (optional)</Text>
+            <TextInput
+              style={styles.modalInput}
+              placeholder="Sick, Injury, Tired, etc."
+              placeholderTextColor="#666"
+              value={restDayReason}
+              onChangeText={setRestDayReason}
+              multiline
+            />
+            
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.cancelButton]}
+                onPress={() => {
+                  setShowRestDayModal(false);
+                  setRestDayReason("");
                 }}
               >
                 <Text style={styles.modalButtonText}>Cancel</Text>
@@ -627,9 +911,9 @@ export default function DailyQuestScreen() {
               
               <TouchableOpacity
                 style={[styles.modalButton, styles.confirmButton]}
-                onPress={updateWeight}
+                onPress={takeRestDay}
               >
-                <Text style={styles.modalButtonText}>Save</Text>
+                <Text style={styles.modalButtonText}>Confirm</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -642,87 +926,87 @@ export default function DailyQuestScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1a1a2e',
+    backgroundColor: "#1a1a2e",
   },
   loadingText: {
-    color: '#4a9eff',
+    color: "#4a9eff",
     fontSize: 16,
-    textAlign: 'center',
+    textAlign: "center",
     marginTop: 100,
-    fontFamily: 'monospace',
+    fontFamily: "monospace",
     letterSpacing: 2,
   },
   header: {
     padding: 20,
     paddingTop: 60,
-    backgroundColor: '#16213e',
+    backgroundColor: "#16213e",
     borderBottomWidth: 4,
-    borderBottomColor: '#4a9eff',
+    borderBottomColor: "#4a9eff",
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#4a9eff',
-    textAlign: 'center',
+    fontWeight: "bold",
+    color: "#4a9eff",
+    textAlign: "center",
     marginBottom: 4,
     letterSpacing: 2,
-    textShadowColor: '#1a2f4a',
+    textShadowColor: "#1a2f4a",
     textShadowOffset: { width: 4, height: 4 },
     textShadowRadius: 0,
   },
   date: {
     fontSize: 12,
-    color: '#8b8b8b',
-    textAlign: 'center',
+    color: "#8b8b8b",
+    textAlign: "center",
     marginBottom: 20,
-    fontFamily: 'monospace',
+    fontFamily: "monospace",
   },
   statsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
+    flexDirection: "row",
+    justifyContent: "space-around",
     marginBottom: 16,
   },
   statBox: {
-    alignItems: 'center',
-    backgroundColor: '#1a1a2e',
+    alignItems: "center",
+    backgroundColor: "#1a1a2e",
     padding: 8,
     borderWidth: 2,
-    borderColor: '#4a9eff',
+    borderColor: "#4a9eff",
     minWidth: 80,
   },
   statValue: {
     fontSize: 20,
-    fontWeight: 'bold',
-    color: '#ffffff',
-    fontFamily: 'monospace',
+    fontWeight: "bold",
+    color: "#ffffff",
+    fontFamily: "monospace",
   },
   statLabel: {
     fontSize: 10,
-    color: '#8b8b8b',
+    color: "#8b8b8b",
     marginTop: 4,
     letterSpacing: 1,
   },
   expBarContainer: {
     height: 16,
-    backgroundColor: '#1a1a2e',
+    backgroundColor: "#1a1a2e",
     borderRadius: 0,
-    overflow: 'hidden',
+    overflow: "hidden",
     marginBottom: 8,
     borderWidth: 2,
-    borderColor: '#4a9eff',
+    borderColor: "#4a9eff",
   },
   expBar: {
-    height: '100%',
-    backgroundColor: '#4a9eff',
+    height: "100%",
+    backgroundColor: "#4a9eff",
   },
   expText: {
     fontSize: 11,
-    color: '#8b8b8b',
-    textAlign: 'center',
-    fontFamily: 'monospace',
+    color: "#8b8b8b",
+    textAlign: "center",
+    fontFamily: "monospace",
   },
   characterContainer: {
-    alignItems: 'center',
+    alignItems: "center",
     marginVertical: 12,
   },
   questList: {
@@ -730,182 +1014,182 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   questCard: {
-    backgroundColor: '#16213e',
+    backgroundColor: "#16213e",
     borderRadius: 0,
     padding: 16,
     marginBottom: 16,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     borderWidth: 4,
-    borderColor: '#4a9eff',
+    borderColor: "#4a9eff",
   },
   questCardCompleted: {
-    borderColor: '#4a9eff',
-    backgroundColor: '#1e2f3f',
+    borderColor: "#4a9eff",
+    backgroundColor: "#1e2f3f",
   },
   questCardUnderperformed: {
-    borderColor: '#ffaa00',
-    backgroundColor: '#2a1f16',
+    borderColor: "#ffaa00",
+    backgroundColor: "#2a1f16",
   },
   questInfo: {
     flex: 1,
   },
   questName: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#ffffff',
+    fontWeight: "bold",
+    color: "#ffffff",
     marginBottom: 4,
     letterSpacing: 1,
   },
   questTarget: {
     fontSize: 13,
-    color: '#4a9eff',
+    color: "#4a9eff",
     marginBottom: 2,
-    fontFamily: 'monospace',
+    fontFamily: "monospace",
   },
   questDifficulty: {
     fontSize: 11,
-    color: '#8b8b8b',
+    color: "#8b8b8b",
     marginBottom: 8,
-    fontFamily: 'monospace',
+    fontFamily: "monospace",
   },
   inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginTop: 8,
   },
   inputLabel: {
-    color: '#8b8b8b',
+    color: "#8b8b8b",
     fontSize: 12,
     marginRight: 8,
-    fontFamily: 'monospace',
+    fontFamily: "monospace",
   },
   input: {
-    backgroundColor: '#1a1a2e',
-    color: '#ffffff',
+    backgroundColor: "#1a1a2e",
+    color: "#ffffff",
     padding: 8,
     borderRadius: 0,
     width: 80,
     borderWidth: 2,
-    borderColor: '#4a9eff',
+    borderColor: "#4a9eff",
     fontSize: 14,
-    textAlign: 'center',
-    fontFamily: 'monospace',
-    fontWeight: 'bold',
+    textAlign: "center",
+    fontFamily: "monospace",
+    fontWeight: "bold",
   },
   inputUnit: {
-    color: '#8b8b8b',
+    color: "#8b8b8b",
     fontSize: 12,
     marginLeft: 8,
-    fontFamily: 'monospace',
+    fontFamily: "monospace",
   },
   completedAmount: {
-    color: '#4a9eff',
+    color: "#4a9eff",
     fontSize: 13,
     marginTop: 8,
-    fontWeight: 'bold',
-    fontFamily: 'monospace',
+    fontWeight: "bold",
+    fontFamily: "monospace",
   },
   penaltyWarning: {
-    color: '#ffaa00',
+    color: "#ffaa00",
     fontSize: 11,
     marginTop: 4,
-    fontFamily: 'monospace',
-    fontWeight: 'bold',
+    fontFamily: "monospace",
+    fontWeight: "bold",
   },
   struggleWarning: {
-    color: '#ff0040',
+    color: "#ff0040",
     fontSize: 11,
     marginTop: 4,
-    fontFamily: 'monospace',
-    fontWeight: 'bold',
+    fontFamily: "monospace",
+    fontWeight: "bold",
   },
   checkButton: {
     width: 50,
     height: 50,
     borderRadius: 0,
-    backgroundColor: '#16213e',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "#16213e",
+    justifyContent: "center",
+    alignItems: "center",
     borderWidth: 3,
-    borderColor: '#4a9eff',
+    borderColor: "#4a9eff",
   },
   checkButtonCompleted: {
-    backgroundColor: '#4a9eff',
-    borderColor: '#fff',
+    backgroundColor: "#4a9eff",
+    borderColor: "#fff",
   },
   checkButtonText: {
     fontSize: 28,
-    color: '#4a9eff',
-    fontWeight: 'bold',
+    color: "#4a9eff",
+    fontWeight: "bold",
   },
   completeBanner: {
-    backgroundColor: '#4a9eff',
+    backgroundColor: "#4a9eff",
     padding: 20,
-    alignItems: 'center',
+    alignItems: "center",
     borderTopWidth: 4,
-    borderTopColor: '#fff',
+    borderTopColor: "#fff",
   },
   completeBannerText: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#000',
+    fontWeight: "bold",
+    color: "#000",
     letterSpacing: 2,
   },
   addExerciseButton: {
-    backgroundColor: '#16213e',
+    backgroundColor: "#16213e",
     padding: 16,
     borderRadius: 0,
     borderWidth: 3,
-    borderColor: '#4a9eff',
-    borderStyle: 'dashed',
+    borderColor: "#4a9eff",
+    borderStyle: "dashed",
     marginTop: 16,
     marginBottom: 32,
   },
   addExerciseButtonText: {
-    color: '#4a9eff',
-    textAlign: 'center',
+    color: "#4a9eff",
+    textAlign: "center",
     fontSize: 14,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     letterSpacing: 2,
-    fontFamily: 'monospace',
+    fontFamily: "monospace",
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(0, 0, 0, 0.8)",
+    justifyContent: "center",
+    alignItems: "center",
   },
   modalContent: {
-    backgroundColor: '#16213e',
+    backgroundColor: "#16213e",
     padding: 24,
     borderRadius: 0,
-    width: '85%',
+    width: "85%",
     borderWidth: 4,
-    borderColor: '#4a9eff',
+    borderColor: "#4a9eff",
   },
   modalTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#4a9eff',
+    fontWeight: "bold",
+    color: "#4a9eff",
     marginBottom: 20,
-    textAlign: 'center',
+    textAlign: "center",
     letterSpacing: 2,
   },
   modalInput: {
-    backgroundColor: '#1a1a2e',
-    color: '#ffffff',
+    backgroundColor: "#1a1a2e",
+    color: "#ffffff",
     padding: 12,
     borderRadius: 0,
     marginBottom: 12,
     borderWidth: 2,
-    borderColor: '#4a9eff',
+    borderColor: "#4a9eff",
     fontSize: 14,
-    fontFamily: 'monospace',
+    fontFamily: "monospace",
   },
   modalButtons: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 12,
     marginTop: 8,
   },
@@ -916,76 +1200,171 @@ const styles = StyleSheet.create({
     borderWidth: 3,
   },
   cancelButton: {
-    backgroundColor: '#1a1a2e',
-    borderColor: '#8b8b8b',
+    backgroundColor: "#1a1a2e",
+    borderColor: "#8b8b8b",
   },
   confirmButton: {
-    backgroundColor: '#4a9eff',
-    borderColor: '#fff',
+    backgroundColor: "#4a9eff",
+    borderColor: "#fff",
   },
   modalButtonText: {
-    textAlign: 'center',
+    textAlign: "center",
     fontSize: 14,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     letterSpacing: 1,
   },
   weightContainer: {
-    backgroundColor: '#16213e',
+    backgroundColor: "#16213e",
     padding: 16,
     borderRadius: 0,
     borderWidth: 3,
-    borderColor: '#4a9eff',
+    borderColor: "#4a9eff",
     marginBottom: 16,
   },
   weightTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#4a9eff',
+    fontWeight: "bold",
+    color: "#4a9eff",
     marginBottom: 12,
-    textAlign: 'center',
+    textAlign: "center",
     letterSpacing: 2,
   },
   weightStats: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
+    flexDirection: "row",
+    justifyContent: "space-around",
     marginBottom: 12,
   },
   weightBox: {
-    alignItems: 'center',
+    alignItems: "center",
     minWidth: 80,
   },
   weightLabel: {
     fontSize: 10,
-    color: '#8b8b8b',
+    color: "#8b8b8b",
     marginBottom: 4,
-    fontFamily: 'monospace',
+    fontFamily: "monospace",
   },
   weightValue: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#ffffff',
-    fontFamily: 'monospace',
+    fontWeight: "bold",
+    color: "#ffffff",
+    fontFamily: "monospace",
   },
   updateWeightButton: {
-    backgroundColor: '#1a1a2e',
+    backgroundColor: "#1a1a2e",
     padding: 12,
     borderRadius: 0,
     borderWidth: 2,
-    borderColor: '#4a9eff',
+    borderColor: "#4a9eff",
   },
   updateWeightButtonText: {
-    color: '#4a9eff',
-    textAlign: 'center',
+    color: "#4a9eff",
+    textAlign: "center",
     fontSize: 12,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     letterSpacing: 1,
-    fontFamily: 'monospace',
+    fontFamily: "monospace",
   },
   weightInputLabel: {
-    color: '#8b8b8b',
+    color: "#8b8b8b",
     fontSize: 12,
     marginBottom: 6,
     marginTop: 4,
-    fontFamily: 'monospace',
+    fontFamily: "monospace",
+  },
+  incrementButton: {
+    backgroundColor: "#1a1a2e",
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderWidth: 2,
+    borderColor: "#4a9eff",
+    marginHorizontal: 2,
+  },
+  incrementButtonText: {
+    color: "#4a9eff",
+    fontSize: 12,
+    fontWeight: "bold",
+    fontFamily: "monospace",
+  },
+  quickFillContainer: {
+    marginTop: 8,
+    alignItems: "center",
+  },
+  quickFillButton: {
+    backgroundColor: "#16213e",
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderWidth: 2,
+    borderColor: "#4a9eff",
+  },
+  quickFillText: {
+    color: "#4a9eff",
+    fontSize: 11,
+    fontWeight: "bold",
+    fontFamily: "monospace",
+  },
+  actionButtonsContainer: {
+    flexDirection: "row",
+    gap: 12,
+    marginBottom: 16,
+  },
+  actionButton: {
+    flex: 1,
+    backgroundColor: "#16213e",
+    padding: 12,
+    borderRadius: 0,
+    borderWidth: 3,
+    borderColor: "#4a9eff",
+    alignItems: "center",
+  },
+  actionButtonEmoji: {
+    fontSize: 24,
+    marginBottom: 4,
+  },
+  actionButtonText: {
+    color: "#4a9eff",
+    fontSize: 11,
+    fontWeight: "bold",
+    letterSpacing: 1,
+    fontFamily: "monospace",
+  },
+  restDayInfo: {
+    color: "#8b8b8b",
+    fontSize: 13,
+    lineHeight: 20,
+    marginBottom: 16,
+    textAlign: "center",
+  },
+  photosContainer: {
+    backgroundColor: "#16213e",
+    padding: 16,
+    borderRadius: 0,
+    borderWidth: 3,
+    borderColor: "#4a9eff",
+    marginBottom: 16,
+  },
+  photosTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#4a9eff",
+    marginBottom: 12,
+    textAlign: "center",
+    letterSpacing: 2,
+  },
+  photoCard: {
+    marginRight: 12,
+    alignItems: "center",
+  },
+  photoImage: {
+    width: 120,
+    height: 160,
+    borderWidth: 3,
+    borderColor: "#4a9eff",
+    marginBottom: 6,
+  },
+  photoDate: {
+    color: "#8b8b8b",
+    fontSize: 10,
+    fontFamily: "monospace",
   },
 });

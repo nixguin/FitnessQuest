@@ -5,16 +5,19 @@
 ### Option 1: Expo Go (Recommended for Testing)
 
 1. **Install Expo Go on your phone:**
+
    - [Android - Google Play Store](https://play.google.com/store/apps/details?id=host.exp.exponent)
    - [iOS - App Store](https://apps.apple.com/app/expo-go/id982107779)
 
 2. **Start the development server:**
+
    ```bash
    cd "Fitness App"
    npm start
    ```
 
 3. **Scan the QR code:**
+
    - **Android**: Use the Expo Go app to scan
    - **iOS**: Use your Camera app to scan, then open in Expo Go
 
@@ -50,10 +53,12 @@ npm run web
 ### Step 1: Add Your First Exercise
 
 **Option A - Quick Add (Recommended for beginners):**
+
 - Tap "💪 Push-ups" - Starts at 20, progresses to 100
 - Perfect for getting started quickly!
 
 **Option B - Custom Exercise:**
+
 1. Tap "+ Add Custom Exercise"
 2. Fill in the form:
    ```
@@ -68,6 +73,7 @@ npm run web
 ### Step 2: Add More Exercises (Optional)
 
 Add 2-3 exercises for a complete daily routine:
+
 - Upper body: Push-ups, Pull-ups
 - Cardio: Running
 - Lower body: Squats
@@ -97,21 +103,25 @@ Tap "Start Training ⚡" to begin your fitness journey!
 ## Troubleshooting
 
 ### "Cannot find module" error
+
 ```bash
 npm install
 ```
 
 ### "Metro bundler not starting"
+
 ```bash
 npm start -- --reset-cache
 ```
 
 ### App crashes on launch
+
 1. Close the app completely
 2. Stop the development server (Ctrl+C)
 3. Restart with `npm start`
 
 ### Changes not reflecting
+
 - Shake your phone → "Reload"
 - Or press `r` in the terminal
 

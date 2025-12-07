@@ -1,6 +1,9 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import { getEquipmentDetails, getNextUnlocks } from '../utils/characterProgression';
+import React from "react";
+import { View, Text, StyleSheet, ScrollView } from "react-native";
+import {
+  getEquipmentDetails,
+  getNextUnlocks,
+} from "../utils/characterProgression";
 
 interface CharacterStatsProps {
   level: number;
@@ -13,12 +16,14 @@ export default function CharacterStats({ level }: CharacterStatsProps) {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>⚔️ EQUIPMENT</Text>
-      
+
       <View style={styles.equipmentGrid}>
         {/* Weapon */}
         <View style={styles.equipmentSlot}>
           <Text style={styles.slotLabel}>WEAPON</Text>
-          <View style={[styles.slotBox, { borderColor: equipment.weapon.color }]}>
+          <View
+            style={[styles.slotBox, { borderColor: equipment.weapon.color }]}
+          >
             <Text style={styles.slotEmoji}>{equipment.weapon.emoji}</Text>
           </View>
           <Text style={styles.slotName}>{equipment.weapon.name}</Text>
@@ -32,7 +37,9 @@ export default function CharacterStats({ level }: CharacterStatsProps) {
         {/* Armor */}
         <View style={styles.equipmentSlot}>
           <Text style={styles.slotLabel}>ARMOR</Text>
-          <View style={[styles.slotBox, { borderColor: equipment.armor.color }]}>
+          <View
+            style={[styles.slotBox, { borderColor: equipment.armor.color }]}
+          >
             <Text style={styles.slotEmoji}>{equipment.armor.emoji}</Text>
           </View>
           <Text style={styles.slotName}>{equipment.armor.name}</Text>
@@ -46,13 +53,18 @@ export default function CharacterStats({ level }: CharacterStatsProps) {
         {/* Accessory */}
         <View style={styles.equipmentSlot}>
           <Text style={styles.slotLabel}>ACCESSORY</Text>
-          <View style={[styles.slotBox, { borderColor: equipment.accessory?.color || '#8b8b8b' }]}>
+          <View
+            style={[
+              styles.slotBox,
+              { borderColor: equipment.accessory?.color || "#8b8b8b" },
+            ]}
+          >
             <Text style={styles.slotEmoji}>
-              {equipment.accessory?.emoji || '?'}
+              {equipment.accessory?.emoji || "?"}
             </Text>
           </View>
           <Text style={styles.slotName}>
-            {equipment.accessory?.name || 'Locked'}
+            {equipment.accessory?.name || "Locked"}
           </Text>
           {nextUnlocks.nextAccessory && (
             <Text style={styles.nextUnlock}>
@@ -67,43 +79,43 @@ export default function CharacterStats({ level }: CharacterStatsProps) {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#16213e',
+    backgroundColor: "#16213e",
     padding: 16,
     borderWidth: 3,
-    borderColor: '#4a9eff',
+    borderColor: "#4a9eff",
     marginBottom: 16,
   },
   title: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#4a9eff',
+    fontWeight: "bold",
+    color: "#4a9eff",
     marginBottom: 12,
-    textAlign: 'center',
+    textAlign: "center",
     letterSpacing: 2,
   },
   equipmentGrid: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     gap: 8,
   },
   equipmentSlot: {
     flex: 1,
-    alignItems: 'center',
+    alignItems: "center",
   },
   slotLabel: {
     fontSize: 9,
-    color: '#8b8b8b',
+    color: "#8b8b8b",
     marginBottom: 4,
-    fontFamily: 'monospace',
+    fontFamily: "monospace",
     letterSpacing: 1,
   },
   slotBox: {
     width: 60,
     height: 60,
-    backgroundColor: '#1a1a2e',
+    backgroundColor: "#1a1a2e",
     borderWidth: 3,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginBottom: 4,
   },
   slotEmoji: {
@@ -111,14 +123,14 @@ const styles = StyleSheet.create({
   },
   slotName: {
     fontSize: 10,
-    color: '#ffffff',
-    textAlign: 'center',
-    fontFamily: 'monospace',
+    color: "#ffffff",
+    textAlign: "center",
+    fontFamily: "monospace",
     marginBottom: 2,
   },
   nextUnlock: {
     fontSize: 8,
-    color: '#ffaa00',
-    fontFamily: 'monospace',
+    color: "#ffaa00",
+    fontFamily: "monospace",
   },
 });

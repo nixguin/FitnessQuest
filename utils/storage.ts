@@ -32,13 +32,13 @@ export const saveDailyQuest = async (quest: DailyQuest): Promise<void> => {
   try {
     const quests = await getDailyQuests();
     const existingIndex = quests.findIndex(q => q.date === quest.date);
-    
+
     if (existingIndex >= 0) {
       quests[existingIndex] = quest;
     } else {
       quests.push(quest);
     }
-    
+
     await AsyncStorage.setItem(KEYS.DAILY_QUESTS, JSON.stringify(quests));
   } catch (error) {
     console.error('Error saving daily quest:', error);
@@ -86,6 +86,7 @@ export const getUserProgress = async (): Promise<UserProgress> => {
       level: 1,
       exp: 0,
       weightHistory: [],
+      photos: [],
     };
   } catch (error) {
     console.error('Error loading user progress:', error);
@@ -96,6 +97,7 @@ export const getUserProgress = async (): Promise<UserProgress> => {
       level: 1,
       exp: 0,
       weightHistory: [],
+      photos: [],
     };
   }
 };

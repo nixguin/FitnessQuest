@@ -74,7 +74,9 @@ Fitness App/
 ## 📄 Key Files Explained
 
 ### 🎯 App Entry Point
+
 **`App.tsx`** - Main component
+
 - Checks if exercises are setup
 - Shows ExerciseSetupScreen or DailyQuestScreen
 - Handles app-wide state
@@ -82,12 +84,14 @@ Fitness App/
 ### 🖥️ Screens
 
 **`ExerciseSetupScreen.tsx`** - First-time setup
+
 - Quick add templates (Push-ups, Running, Pull-ups)
 - Custom exercise creation
 - Exercise list with delete option
 - Modal for adding exercises
 
 **`DailyQuestScreen.tsx`** - Main app screen
+
 - Daily quest list
 - Exercise completion tracking
 - Progress stats (Level, Streak, Total Days)
@@ -97,6 +101,7 @@ Fitness App/
 ### 🏗️ Data Models
 
 **`types/index.ts`** - All TypeScript types
+
 ```typescript
 Exercise {
   id, name, type, currentTarget, unit,
@@ -121,18 +126,21 @@ UserProgress {
 ### 🛠️ Utilities
 
 **`storage.ts`** - Data persistence
+
 - Save/load exercises
 - Save/load daily quests
 - Save/load user progress
 - Uses AsyncStorage (local storage)
 
 **`progressiveOverload.ts`** - Core logic
+
 - Calculate weekly progression
 - Determine level ups
 - Handle difficulty increases
 - Check if progression day
 
 **`dateUtils.ts`** - Date helpers
+
 - Format dates consistently
 - Calculate date differences
 - Get today's date string
@@ -142,6 +150,7 @@ UserProgress {
 ## 🎨 UI Components Breakdown
 
 ### ExerciseSetupScreen Components:
+
 ```
 ┌─────────────────────────────────┐
 │ ⚔️ Setup Your Daily Quest      │ ← Title
@@ -163,6 +172,7 @@ UserProgress {
 ```
 
 ### DailyQuestScreen Components:
+
 ```
 ┌─────────────────────────────────┐
 │ ⚔️ Daily Quest                  │ ← Title
@@ -187,6 +197,7 @@ UserProgress {
 ## 🔄 Data Flow
 
 ### App Launch:
+
 ```
 1. App.tsx loads
 2. Checks for existing exercises
@@ -195,6 +206,7 @@ UserProgress {
 ```
 
 ### Exercise Setup:
+
 ```
 User Action → State Update → AsyncStorage Save
    ↓              ↓                ↓
@@ -202,6 +214,7 @@ Add Exercise → exercises[] → saveExercises()
 ```
 
 ### Daily Quest Flow:
+
 ```
 1. Load exercises from storage
 2. Check for today's quest
@@ -213,6 +226,7 @@ Add Exercise → exercises[] → saveExercises()
 ```
 
 ### Progressive Overload:
+
 ```
 App Launch
    ↓
@@ -286,10 +300,12 @@ npm start -- --reset-cache    # Clear cache
 ## 📱 App Size & Performance
 
 **Development Build:**
+
 - App bundle: ~30 MB (with all dependencies)
 - Load time: ~2-3 seconds
 
 **Production Build (future):**
+
 - Optimized: ~15-20 MB
 - Load time: ~1 second
 
@@ -305,6 +321,7 @@ Easy to add new features:
 4. **New Storage**: Extend `storage.ts`
 
 Example - Add Settings Screen:
+
 ```typescript
 // screens/SettingsScreen.tsx
 export default function SettingsScreen() {
@@ -312,7 +329,9 @@ export default function SettingsScreen() {
 }
 
 // App.tsx - add navigation logic
-{showSettings && <SettingsScreen />}
+{
+  showSettings && <SettingsScreen />;
+}
 ```
 
 ---
@@ -321,12 +340,12 @@ export default function SettingsScreen() {
 
 ```json
 {
-  "expo": "~54.0.27",              // Expo framework
-  "react": "19.1.0",               // React library
-  "react-native": "0.81.5",        // React Native
-  "@react-native-async-storage/async-storage": "^2.2.0",  // Storage
-  "expo-status-bar": "~3.0.9",     // Status bar control
-  "typescript": "~5.9.2"           // TypeScript
+  "expo": "~54.0.27", // Expo framework
+  "react": "19.1.0", // React library
+  "react-native": "0.81.5", // React Native
+  "@react-native-async-storage/async-storage": "^2.2.0", // Storage
+  "expo-status-bar": "~3.0.9", // Status bar control
+  "typescript": "~5.9.2" // TypeScript
 }
 ```
 

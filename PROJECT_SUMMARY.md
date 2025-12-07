@@ -7,28 +7,33 @@ I've built you a complete **Solo Leveling inspired fitness tracking app** with R
 ### 📱 App Features
 
 #### ✨ Daily Quest System
+
 - Track multiple exercises daily
 - Mark exercises complete with checkmarks
 - See your progress with level, streak, and total days
 - Earn 100 EXP per completed quest
 
 #### 💪 Progressive Overload (Your Special Request!)
+
 - **Automatic weekly progression** - targets increase every 7 days
 - **Difficulty levels** - when you hit your max (like 100 push-ups), you level up to Difficulty 2
 - **Customizable** - set your own starting point, weekly increase, and max target
 
 #### 🏋️ Exercise Management
+
 - **Quick Add**: Push-ups, Running, Pull-ups (with preset values)
 - **Custom exercises**: Add any exercise with your own parameters
 - **Multiple exercises**: Track unlimited daily goals
 
 #### 📊 Progress Tracking
+
 - Level system with EXP bar
 - Streak counter with fire emoji 🔥
 - Total days completed
 - Individual exercise completion tracking
 
 ### 🎨 Design
+
 - **Dark theme** inspired by Solo Leveling
 - Clean, modern interface
 - Intuitive navigation
@@ -65,10 +70,12 @@ Fitness App/
 ### Quick Start (5 minutes)
 
 1. **Install Expo Go** on your phone:
+
    - [Android - Play Store](https://play.google.com/store/apps/details?id=host.exp.exponent)
    - [iOS - App Store](https://apps.apple.com/app/expo-go/id982107779)
 
 2. **Start the server:**
+
    ```powershell
    cd "c:\Users\ntony\OneDrive\Desktop\Fitness App"
    npm start
@@ -79,6 +86,7 @@ Fitness App/
 4. **Done!** Start adding your exercises! 🎉
 
 ### Alternative Options
+
 - **Android Emulator**: `npm run android`
 - **iOS Simulator** (Mac only): `npm run ios`
 - **Web Browser**: `npm run web`
@@ -90,11 +98,13 @@ This is the key feature you asked for!
 ### Example: Push-ups Journey
 
 **Setup:**
+
 - Starting: 20 push-ups
 - Weekly increase: +5
 - Max target: 100 (triggers level up)
 
 **Progression:**
+
 ```
 Week 1:  20 push-ups  (Difficulty 1)
 Week 2:  25 push-ups  (+5)
@@ -112,6 +122,7 @@ Week 18: 65 push-ups  (+5)
 ```
 
 ### The System:
+
 1. Every **7 days**, your target increases automatically
 2. When you reach **max target**, you level up to next difficulty
 3. New difficulty gives you a **harder challenge** with higher max
@@ -121,6 +132,7 @@ Week 18: 65 push-ups  (+5)
 ## 🎯 Usage Flow
 
 ### First Time
+
 1. Open app → See setup screen
 2. Add exercises:
    - Tap "💪 Push-ups" for quick add, OR
@@ -128,6 +140,7 @@ Week 18: 65 push-ups  (+5)
 3. Tap "Start Training ⚡"
 
 ### Daily Use
+
 1. Open app → See today's quest
 2. Do your exercises
 3. Enter the amount completed
@@ -135,6 +148,7 @@ Week 18: 65 push-ups  (+5)
 5. Complete all → Get 100 EXP + streak bonus! 🎉
 
 ### Weekly
+
 - App automatically increases your targets every 7 days
 - You'll see a notification when it happens
 - Keep crushing your goals!
@@ -144,23 +158,27 @@ Week 18: 65 push-ups  (+5)
 Based on your request for Strava integration and more:
 
 ### v1.1.0 (Next Update)
+
 - Edit existing exercises
 - Add exercises after initial setup
 - Exercise notes
 - Data export
 
 ### v1.2.0 (Q1 2026)
+
 - Progress graphs and charts
 - Calendar view of completed days
 - Achievement badges
 
 ### v1.3.0 (Q2 2026)
+
 - **Strava Integration** ← You mentioned this!
   - Auto-sync running activities
   - Connect with OAuth
   - Import historical data
 
 ### v2.0.0 (2027)
+
 - Complete gamification like Solo Leveling
 - Guild system for group challenges
 - Equipment system
@@ -200,6 +218,7 @@ Everything you asked for:
 - ✅ Built with React Native + Expo + TypeScript
 
 **Bonus features added:**
+
 - ✅ Level and EXP system (like Solo Leveling!)
 - ✅ Streak tracking
 - ✅ Quick add templates
@@ -220,6 +239,7 @@ The app captures the Solo Leveling daily quest feeling:
 ## 🚧 Known Limitations
 
 Current version doesn't have:
+
 - Can't edit exercises after creation (must delete/re-add)
 - No rest day management
 - No Strava integration yet (planned for v1.3.0)
@@ -252,6 +272,7 @@ These are all on the roadmap!
 ## 🎊 That's It!
 
 You now have a fully functional fitness tracking app inspired by Solo Leveling with:
+
 - ✅ Progressive overload system
 - ✅ Difficulty levels
 - ✅ Daily quest tracking
@@ -264,4 +285,4 @@ You now have a fully functional fitness tracking app inspired by Solo Leveling w
 
 Built with ❤️ inspired by Solo Leveling (나 혼자만 레벨업)
 
-*"Arise and get stronger every day!"*
+_"Arise and get stronger every day!"_

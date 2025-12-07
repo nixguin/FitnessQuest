@@ -38,6 +38,11 @@ export interface WeightEntry {
   weight: number;
 }
 
+export interface PhotoEntry {
+  date: string;
+  uri: string;
+}
+
 export interface UserProgress {
   totalDaysCompleted: number;
   currentStreak: number;
@@ -47,4 +52,5 @@ export interface UserProgress {
   currentWeight?: number;
   goalWeight?: number;
   weightHistory: WeightEntry[];
+  photos: PhotoEntry[];
 }
